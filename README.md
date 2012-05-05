@@ -27,7 +27,7 @@ Create a new environment with a particular Ruby:
 
     $ redenv -r ruby1.9.1 ./env
     
-Activate the environment for you current shell:
+Activate the environment for your current shell:
 
     $ . ./env/bin/activate
     
