@@ -121,7 +121,7 @@ find "\${REDENV_ROOT}/bin" -type f -print0 | \
 EOF
 chmod a+x "$DEST_DIR/bin/redenv-fixup"
 
-for COMMAND in ruby gem irb ri rdoc; do
+for COMMAND in ruby gem irb ri; do
     SYSTEM_COMMAND="$RUBY_BINDIR/$COMMAND$RUBY_VERSION"
     if [ -x "$SYSTEM_COMMAND" ]; then
         REDENV_COMMAND="$DEST_DIR/bin/$COMMAND"
