@@ -61,9 +61,7 @@ redenv-deactivate() {
             eval unset _OLD_REDENV_\$var
         done
 
-        if [ -n "\$BASH" -o -n "\$ZSH_VERSION" ] ; then
-            hash -r
-        fi
+        hash -r
     fi
 
     unset REDENV_ROOT
@@ -96,12 +94,7 @@ _OLD_REDENV_GEM_PATH="\$GEM_PATH"
 GEM_PATH="\$REDENV_ROOT"
 export GEM_PATH
 
-# This should detect bash and zsh, which have a hash command that must
-# be called to get it to forget past commands.  Without forgetting
-# past commands the \$PATH changes we made may not be respected
-if [ -n "\$BASH" -o -n "\$ZSH_VERSION" ] ; then
-    hash -r
-fi
+hash -r
 EOF
 
 cat <<EOF >"$DEST_DIR/bin/redenv-fixup"
