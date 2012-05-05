@@ -1,0 +1,145 @@
+#! /bin/bash
+
+usage() {
+    cat <<EOF
+Usage: redenv [OPTIONS] DEST_DIR
+
+Options:
+  -h, --help            Show this help message and exit
+  -r RUBY_EXE, --ruby RUBY_EXE
+                        The Ruby interpreter to use, e.g., --ruby ruby1.9.1
+                        will use the ruby1.9.1 interpreter to create the new
+                        environment.  The default is $(which ruby).
+EOF
+}
+
+RUBY_EXE="ruby"
+if [ "x-r" = "x$1" -o "x--ruby" = "x$1" ]; then
+    shift
+    RUBY_EXE="$1"
+    shift
+fi
+
+if [ "x-h" = "x$1" -o "x--help" = "x$1" ]; then
+    usage
+    exit 0
+fi
+
+DEST_DIR="$1"; shift
+if [ "x" = "x$DEST_DIR" -o "x" != "x$1" ]; then
+    usage
+    exit 1
+fi
+
+RUBY_RESOLVED=$(which $RUBY_EXE)
+if [ "x" = "x$RUBY_RESOLVED" ]; then
+    echo "redenv: error: $RUBY: not found"
+    exit 1
+fi
+RUBY_VERSION=$(echo "$RUBY_RESOLVED" | grep -Eo '([0-9.]+)$')
+RUBY_BINDIR=$(dirname "$RUBY_RESOLVED")
+
+mkdir -p "$DEST_DIR/bin"
+
+cat <<EOF >"$DEST_DIR/bin/activate"
+# This file must be used with "source activate" from bash -- you cannot
+# run it directly or use it with another shell.
+
+redenv-deactivate() {
+    local var=
+    local oldval=
+
+    if [ -n "\$REDENV_ROOT" ]; then
+        for var in PATH GEM_HOME GEM_PATH; do
+            eval oldval="\\\$_OLD_REDENV_\$var"
+            if [ -n "\$oldval" ]; then
+                eval \$var="\\\$oldval"
+                eval export \$var
+            else
+                eval unset \$var
+            fi
+            eval unset _OLD_REDENV_\$var
+        done
+
+        if [ -n "\$BASH" -o -n "\$ZSH_VERSION" ] ; then
+            hash -r
+        fi
+    fi
+
+    unset REDENV_ROOT
+    if [ ! "\$1" = "nondestructive" ] ; then
+    # Self destruct!
+        unset -f redenv-deactivate
+    fi
+}
+
+# unset irrelavent variables
+redenv-deactivate nondestructive
+
+redenv_root() {
+    local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
+    ( builtin cd "\$path"; builtin pwd; )
+}
+REDENV_ROOT="\$(redenv_root)"
+export REDENV_ROOT
+unset -f redenv_root
+
+_OLD_REDENV_PATH="\$PATH"
+PATH="\$REDENV_ROOT/bin:\$PATH"
+export PATH
+
+_OLD_REDENV_GEM_HOME="\$GEM_HOME"
+GEM_HOME="\$REDENV_ROOT"
+export GEM_HOME
+
+_OLD_REDENV_GEM_PATH="\$GEM_PATH"
+GEM_PATH="\$REDENV_ROOT"
+export GEM_PATH
+
+# This should detect bash and zsh, which have a hash command that must
+# be called to get it to forget past commands.  Without forgetting
+# past commands the \$PATH changes we made may not be respected
+if [ -n "\$BASH" -o -n "\$ZSH_VERSION" ] ; then
+    hash -r
+fi
+EOF
+
+cat <<EOF >"$DEST_DIR/bin/redenv-fixup"
+#! /bin/bash
+
+if [ "x" = "x\$REDENV_ROOT" ]; then
+    redenv_root() {
+        local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
+        ( builtin cd "\$path"; builtin pwd; )
+    }
+    source "\$(redenv_root)/bin/activate"
+fi
+
+RUBY="\${1:-\$REDENV_ROOT}/bin/ruby"
+find "\${REDENV_ROOT}/bin" -type f -print0 | \
+    xargs -0 sed -i -e "s,^#!.*[/ ]ruby[.0-9]*\$,#! \${RUBY},"
+EOF
+chmod a+x "$DEST_DIR/bin/redenv-fixup"
+
+for COMMAND in ruby gem irb ri rdoc; do
+    SYSTEM_COMMAND="$RUBY_BINDIR/$COMMAND$RUBY_VERSION"
+    if [ -x "$SYSTEM_COMMAND" ]; then
+        REDENV_COMMAND="$DEST_DIR/bin/$COMMAND"
+        cat <<EOF >"$REDENV_COMMAND"
+#! /bin/bash
+
+if [ "x" = "x\$REDENV_ROOT" ]; then
+    redenv_root() {
+        local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
+        ( builtin cd "\$path"; builtin pwd; )
+    }
+    source "\$(redenv_root)/bin/activate"
+fi
+
+exec $SYSTEM_COMMAND "\$@"
+EOF
+        chmod a+x "$REDENV_COMMAND"
+        [ "x" != "x$RUBY_VERSION" ] && \
+            cp "$REDENV_COMMAND" "$REDENV_COMMAND$RUBY_VERSION"
+    fi
+done
