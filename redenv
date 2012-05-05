@@ -50,11 +50,15 @@ redenv-deactivate() {
     local oldval=
 
     if [ -n "\$REDENV_ROOT" ]; then
-        for var in PATH GEM_HOME GEM_PATH; do
+        if [ -n "\$_REDENV_OLD_PATH" ]; then
+          export PATH="\$_REDENV_OLD_PATH"
+          unset _REDENV_OLD_PATH
+        fi
+
+        for var in GEM_HOME GEM_PATH; do
             eval oldval="\\\$_REDENV_OLD_\$var"
             if [ -n "\$oldval" ]; then
-                eval \$var="\\\$oldval"
-                eval export \$var
+                eval export \$var="\\\$oldval"
             else
                 eval unset \$var
             fi
@@ -66,28 +70,24 @@ redenv-deactivate() {
 
     unset REDENV_ROOT
     if [ ! "\$1" = "nondestructive" ] ; then
-    # Self destruct!
         unset -f redenv-deactivate
     fi
 }
-
-# unset irrelavent variables
 redenv-deactivate nondestructive
 
-redenv_root() {
+redenv-root() {
     local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
     ( builtin cd "\$path"; builtin pwd; )
 }
-export REDENV_ROOT="\$(redenv_root)"
-unset -f redenv_root
+export REDENV_ROOT="\$(redenv-root)"
 
-export _REDENV_OLD_PATH="\$PATH"
+_REDENV_OLD_PATH="\$PATH"
 export PATH="\$REDENV_ROOT/bin:\$PATH"
 
-export _REDENV_OLD_GEM_HOME="\$GEM_HOME"
+_REDENV_OLD_GEM_HOME="\$GEM_HOME"
 export GEM_HOME="\$REDENV_ROOT"
 
-export _REDENV_OLD_GEM_PATH="\$GEM_PATH"
+_REDENV_OLD_GEM_PATH="\$GEM_PATH"
 export GEM_PATH="\$REDENV_ROOT"
 
 hash -r
@@ -96,11 +96,13 @@ EOF
 cat <<EOF >"$DEST_DIR/bin/redenv-fixup"
 #! /bin/bash
 
-redenv_root() {
+redenv-root() {
     local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
     ( builtin cd "\$path"; builtin pwd; )
 }
-source "\$(redenv_root)/bin/activate"
+REDENV_ROOT_NEW="\$(redenv-root)"
+[ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ] \
+    && source "\$REDENV_ROOT_NEW/bin/activate"
 
 RUBY="\${1:-\$REDENV_ROOT}/bin/ruby"
 find "\${REDENV_ROOT}/bin" -type f -print0 | \
@@ -115,11 +117,13 @@ for COMMAND in ruby gem irb ri; do
         cat <<EOF >"$REDENV_COMMAND"
 #! /bin/bash
 
-redenv_root() {
+redenv-root() {
     local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
     ( builtin cd "\$path"; builtin pwd; )
 }
-source "\$(redenv_root)/bin/activate"
+REDENV_ROOT_NEW="\$(redenv-root)"
+[ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ] \
+    && source "\$REDENV_ROOT_NEW/bin/activate"
 
 exec $SYSTEM_COMMAND "\$@"
 EOF
