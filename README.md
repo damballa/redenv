@@ -8,13 +8,13 @@ has both [rvm](https://rvm.io/) and
 install their own copies of Ruby, barely support a system-provided Ruby, and
 only support a single system-provided Ruby version.
 
-Hence `redenv` -- simple `virtualenv`-like enviroments, for Ruby.
+Hence `redenv` – simple `virtualenv`-like enviroments, for Ruby.
 
 ## Installation
 
 Just drop the `redenv` `bash` script somewhere in your `PATH`.  Package and
 distribute as you see fit.  The `redenv` script is only necessary when creating
-new environments -- enviroments created with it depend only on the referenced
+new environments.  Enviroments created with it depend only on the referenced
 system-provided Ruby installation.
 
 ## Usage
