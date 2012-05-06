@@ -33,7 +33,7 @@ fi
 
 RUBY_RESOLVED=$(which $RUBY_EXE)
 if [ "x" = "x$RUBY_RESOLVED" ]; then
-    echo "redenv: error: $RUBY: not found"
+    echo "redenv: error: $RUBY_EXE: not found"
     exit 1
 fi
 RUBY_VERSION=$(echo "$RUBY_RESOLVED" | grep -Eo '([0-9.]+)$')
