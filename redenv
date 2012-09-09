@@ -86,6 +86,7 @@ redenv-root() {
     ( builtin cd "\$path"; builtin pwd; )
 }
 export REDENV_ROOT="\$(redenv-root)"
+unset -f redenv-root
 
 _REDENV_OLD_PATH="\$PATH"
 export PATH="\$REDENV_ROOT/bin:\$PATH"
@@ -107,6 +108,7 @@ redenv-root() {
     ( builtin cd "\$path"; builtin pwd; )
 }
 REDENV_ROOT_NEW="\$(redenv-root)"
+unset -f redenv-root
 [ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ] \
     && source "\$REDENV_ROOT_NEW/bin/activate"
 
@@ -128,6 +130,7 @@ redenv-root() {
     ( builtin cd "\$path"; builtin pwd; )
 }
 REDENV_ROOT_NEW="\$(redenv-root)"
+unset -f redenv-root
 [ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ] \
     && source "\$REDENV_ROOT_NEW/bin/activate"
 
