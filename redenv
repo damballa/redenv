@@ -1,11 +1,14 @@
 #! /bin/bash
 
+REDENV_VERSION=1.0.0
+
 usage() {
     cat <<EOF
 Usage: redenv [OPTIONS] DEST_DIR
 
 Options:
   -h, --help            Show this help message and exit
+  --version             Show version information and exit
   -r RUBY_EXE, --ruby RUBY_EXE
                         The Ruby interpreter to use, e.g., --ruby ruby1.9.1
                         will use the ruby1.9.1 interpreter to create the new
@@ -22,6 +25,11 @@ fi
 
 if [[ "x-h" = "x$1" ]] || [[ "x--help" = "x$1" ]]; then
     usage
+    exit 0
+fi
+
+if [[ "x--version" = "x$1" ]]; then
+    echo "redenv $REDENV_VERSION"
     exit 0
 fi
 
