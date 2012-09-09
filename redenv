@@ -39,13 +39,16 @@ else
     RUBY_RESOLVED=$(which $RUBY_EXE)
 fi
 if [[ "x" = "x$RUBY_RESOLVED" ]]; then
-    echo "redenv: error: $RUBY_EXE: not found"
+    echo "redenv: error: $RUBY_EXE: Ruby version not found" >&2
     exit 1
 fi
 RUBY_VERSION=$(echo "$RUBY_RESOLVED" | grep -Eo '([0-9.]+)$')
 RUBY_BINDIR=$(dirname "$RUBY_RESOLVED")
 
-mkdir -p "$DEST_DIR/bin"
+if ! mkdir -p "$DEST_DIR/bin"; then
+    echo "redenv: error: $DEST_DIR/bin: failed to create directory" >&2
+    exit 1
+fi
 
 cat <<EOF >"$DEST_DIR/bin/activate"
 # This file must be used with "source activate" from bash -- you cannot
