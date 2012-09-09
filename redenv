@@ -9,24 +9,24 @@ Options:
   -r RUBY_EXE, --ruby RUBY_EXE
                         The Ruby interpreter to use, e.g., --ruby ruby1.9.1
                         will use the ruby1.9.1 interpreter to create the new
-                        environment.  The default is $(which ruby).
+                        environment.  The default is \`ruby'.
 EOF
 }
 
 RUBY_EXE="ruby"
-if [ "x-r" = "x$1" -o "x--ruby" = "x$1" ]; then
+if [[ "x-r" = "x$1" ]] || [[ "x--ruby" = "x$1" ]]; then
     shift
     RUBY_EXE="$1"
     shift
 fi
 
-if [ "x-h" = "x$1" -o "x--help" = "x$1" ]; then
+if [[ "x-h" = "x$1" ]] || [[ "x--help" = "x$1" ]]; then
     usage
     exit 0
 fi
 
 DEST_DIR="$1"; shift
-if [ "x" = "x$DEST_DIR" -o "x" != "x$1" ]; then
+if [[ "x" = "x$DEST_DIR" ]] || [[ "x" != "x$1" ]]; then
     usage
     exit 1
 fi
@@ -38,7 +38,7 @@ elif [[ -x "/usr/bin/$RUBY_EXE" ]]; then
 else
     RUBY_RESOLVED=$(which $RUBY_EXE)
 fi
-if [ "x" = "x$RUBY_RESOLVED" ]; then
+if [[ "x" = "x$RUBY_RESOLVED" ]]; then
     echo "redenv: error: $RUBY_EXE: not found"
     exit 1
 fi
@@ -55,15 +55,15 @@ redenv-deactivate() {
     local var=
     local oldval=
 
-    if [ -n "\$REDENV_ROOT" ]; then
-        if [ -n "\$_REDENV_OLD_PATH" ]; then
+    if [[ -n "\$REDENV_ROOT" ]]; then
+        if [[ -n "\$_REDENV_OLD_PATH" ]]; then
           export PATH="\$_REDENV_OLD_PATH"
           unset _REDENV_OLD_PATH
         fi
 
         for var in GEM_HOME GEM_PATH; do
             eval oldval="\\\$_REDENV_OLD_\$var"
-            if [ -n "\$oldval" ]; then
+            if [[ -n "\$oldval" ]]; then
                 eval export \$var="\\\$oldval"
             else
                 eval unset \$var
@@ -75,7 +75,7 @@ redenv-deactivate() {
     fi
 
     unset REDENV_ROOT
-    if [ ! "\$1" = "nondestructive" ] ; then
+    if [[ ! "\$1" = "nondestructive" ]] ; then
         unset -f redenv-deactivate
     fi
 }
@@ -109,7 +109,7 @@ redenv-root() {
 }
 REDENV_ROOT_NEW="\$(redenv-root)"
 unset -f redenv-root
-[ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ] \
+[[ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ]] \
     && source "\$REDENV_ROOT_NEW/bin/activate"
 
 RUBY="\${1:-\$REDENV_ROOT}/bin/ruby"
@@ -131,13 +131,13 @@ redenv-root() {
 }
 REDENV_ROOT_NEW="\$(redenv-root)"
 unset -f redenv-root
-[ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ] \
+[[ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ]] \
     && source "\$REDENV_ROOT_NEW/bin/activate"
 
 exec $SYSTEM_COMMAND "\$@"
 EOF
         chmod a+x "$REDENV_COMMAND"
-        [ "x" != "x$RUBY_VERSION" ] && \
+        [[ "x" != "x$RUBY_VERSION" ]] && \
             cp "$REDENV_COMMAND" "$REDENV_COMMAND$RUBY_VERSION"
     fi
 done
