@@ -31,7 +31,13 @@ if [ "x" = "x$DEST_DIR" -o "x" != "x$1" ]; then
     exit 1
 fi
 
-RUBY_RESOLVED=$(which $RUBY_EXE)
+if [[ -x "$RUBY_EXE" ]]; then
+    RUBY_RESOLVED=$RUBY_EXE
+elif [[ -x "/usr/bin/$RUBY_EXE" ]]; then
+    RUBY_RESOLVED="/usr/bin/$RUBY_EXE"
+else
+    RUBY_RESOLVED=$(which $RUBY_EXE)
+fi
 if [ "x" = "x$RUBY_RESOLVED" ]; then
     echo "redenv: error: $RUBY_EXE: not found"
     exit 1
