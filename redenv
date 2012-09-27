@@ -93,10 +93,10 @@ redenv-deactivate() {
 redenv-deactivate nondestructive
 
 redenv-root() {
-    local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
-    ( builtin cd "\$path"; builtin pwd; )
+    local mypath="\$(dirname \$(dirname "\${1}"))"
+    ( builtin cd "\$mypath"; builtin pwd; )
 }
-export REDENV_ROOT="\$(redenv-root)"
+export REDENV_ROOT="\$(redenv-root \${BASH_SOURCE:-\$0})"
 unset -f redenv-root
 
 _REDENV_OLD_PATH="\$PATH"
