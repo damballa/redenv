@@ -124,8 +124,10 @@ unset -f redenv-root
     && source "\$REDENV_ROOT_NEW/bin/activate"
 
 RUBY="\${1:-\$REDENV_ROOT}/bin/ruby"
-find "\${REDENV_ROOT}/bin" -type f -print0 | \
-    xargs -0 sed -i -e "s,^#!.*[/ ]ruby[.0-9]*\$,#! \${RUBY},"
+find "\${REDENV_ROOT}/bin" -type f -print0 | \\
+    xargs -0 sed -i \\
+      -e "1 s,^#!.*[/ ]ruby[.0-9]*\$,#! /bin/bash\nexec \${RUBY} -x \"\\\$0\" \"\\\$@\"\n#!ruby," \\
+      -e "2 s,^exec [^ ]*,exec \${RUBY},"
 EOF
 chmod a+x "$DEST_DIR/bin/redenv-fixup"
 
