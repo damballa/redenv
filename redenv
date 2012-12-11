@@ -111,17 +111,23 @@ export GEM_PATH="\$REDENV_ROOT"
 hash -r
 EOF
 
+read -d '' MAYBE_ACTIVATE <<"EOF"
+redenv-root() {
+    local path="$(dirname $(dirname "${BASH_SOURCE[0]}"))"
+    ( builtin cd "$path"; builtin pwd; )
+}
+REDENV_ROOT_NEW="$(redenv-root)"
+unset -f redenv-root
+if [[ "x$REDENV_ROOT" != "x$REDENV_ROOT_NEW" ]] \
+    || [[ "x$GEM_HOME" != "x$REDENV_ROOT_NEW" ]]; then
+    source "$REDENV_ROOT_NEW/bin/activate"
+fi
+EOF
+
 cat <<EOF >"$DEST_DIR/bin/redenv-fixup"
 #! /bin/bash
 
-redenv-root() {
-    local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
-    ( builtin cd "\$path"; builtin pwd; )
-}
-REDENV_ROOT_NEW="\$(redenv-root)"
-unset -f redenv-root
-[[ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ]] \
-    && source "\$REDENV_ROOT_NEW/bin/activate"
+$MAYBE_ACTIVATE
 
 RUBY="\${1:-\$REDENV_ROOT}/bin/ruby"
 find "\${REDENV_ROOT}/bin" -type f -print0 | \\
@@ -138,14 +144,7 @@ for COMMAND in ruby gem irb ri; do
         cat <<EOF >"$REDENV_COMMAND"
 #! /bin/bash
 
-redenv-root() {
-    local path="\$(dirname \$(dirname "\${BASH_SOURCE[0]}"))"
-    ( builtin cd "\$path"; builtin pwd; )
-}
-REDENV_ROOT_NEW="\$(redenv-root)"
-unset -f redenv-root
-[[ "x\$REDENV_ROOT" != "x\$REDENV_ROOT_NEW" ]] \
-    && source "\$REDENV_ROOT_NEW/bin/activate"
+$MAYBE_ACTIVATE
 
 exec $SYSTEM_COMMAND "\$@"
 EOF
