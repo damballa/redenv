@@ -54,6 +54,6 @@ Probably only works on Debian.  Pull requests supporting other OSes welcome.
 
 ## License
 
-Copyright © 2012 Marshall T. Vandegrift
+Copyright © 2012 Marshall T. Vandegrift, Damballa Inc.
 
 Distributed under the MIT License.
